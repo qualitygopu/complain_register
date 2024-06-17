@@ -1,0 +1,380 @@
+import 'package:complain_register_1/complete_work.dart';
+import 'package:complain_register_1/customer_data.dart';
+import 'package:complain_register_1/edit_customer.dart';
+import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class Data extends StatefulWidget {
+  const Data({super.key});
+
+  @override
+  State<Data> createState() => _DataState();
+}
+
+class _DataState extends State<Data> {
+  final TextEditingController _searchController = TextEditingController();
+  List<QuerySnapshot> allresults = [];
+  List _resultList = [];
+
+  getClientstream() async {
+    QuerySnapshot<Map<String, dynamic>> data =
+        await FirebaseFirestore.instance.collection("book").get();
+
+    setState(() {
+      allresults = data.docs.cast<QuerySnapshot<Object?>>();
+    });
+    searchResultlist();
+  }
+
+  int _selectedindex = 0;
+  Stream<QuerySnapshot> _stream = FirebaseFirestore.instance
+      .collection("book")
+      .where('status', isEqualTo: null)
+      .snapshots();
+
+  @override
+  void initState() {
+    getClientstream();
+    _searchController.addListener(_onsearchChanged);
+    super.initState();
+  }
+
+  _onsearchChanged() {
+    print(_searchController.text);
+    searchResultlist();
+  }
+
+  @override
+  void dispose() {
+    _searchController.removeListener(_onsearchChanged);
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    getClientstream();
+    super.didChangeDependencies();
+  }
+
+  searchResultlist() {
+    var showResults = [];
+    if (_searchController.text != "") {
+      for (var clientsnapshot in allresults) {
+        var name = clientsnapshot['name'].toString().toLowerCase();
+        if (name.contains(_searchController.text.toLowerCase())) {
+          showResults.add(clientsnapshot);
+        }
+      }
+    } else {
+      showResults = List.from(allresults);
+    }
+
+    setState(() {
+      _resultList = showResults;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text("Complain Register"),
+        backgroundColor: Colors.blue[900],
+        foregroundColor: Colors.white,
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                label: Text(
+                  "Search",
+                  style: TextStyle(
+                    color: Colors.blue[900],
+                  ),
+                ),
+                border: OutlineInputBorder(),
+                prefixIconColor: Colors.blue,
+              ),
+            ),
+          ),
+          Expanded(
+            child: StreamBuilder(
+              stream: _stream,
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) {
+                  return Center(
+                    child: CircularProgressIndicator(),
+                  );
+                }
+                return ListView.builder(
+                    itemCount: _resultList.length,
+                    itemBuilder: (context, ind) {
+                      bool _isOpen = _resultList[ind]['status'] == 'open';
+
+                      return Padding(
+                        padding: const EdgeInsets.all(4.0),
+                        child: Container(
+                          width: double.infinity,
+                          height: 70,
+                          child: Card(
+                            child: ListTile(
+                              onTap: () {
+                                showDialog<String>(
+                                  context: context,
+                                  builder: (BuildContext context) => Dialog(
+                                    child: Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 10, top: 10, bottom: 20),
+                                      child: Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          Center(
+                                              child: Text("Customer Details",
+                                                  style: TextStyle(
+                                                      fontSize: 18,
+                                                      color: Colors.blue[900],
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      decoration: TextDecoration
+                                                          .underline))),
+                                          SizedBox(
+                                            height: 15,
+                                          ),
+                                          view_data("Customer Name: ",
+                                              _resultList[ind]["name"]),
+                                          view_data('Customer ID: ',
+                                              _resultList[ind]["id"]),
+                                          view_data('Phone.no: ',
+                                              _resultList[ind]["number"]),
+                                          view_data('Address: ',
+                                              _resultList[ind]["address"]),
+                                          view_data('Complaint: ',
+                                              _resultList[ind]["complaint"]),
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceEvenly,
+                                            children: [
+                                              ElevatedButton(
+                                                style: ButtonStyle(
+                                                    foregroundColor:
+                                                        WidgetStatePropertyAll(
+                                                            Colors.white),
+                                                    backgroundColor:
+                                                        WidgetStatePropertyAll(
+                                                            Colors.blue[900])),
+                                                onPressed: () {
+                                                  Navigator.pop(context);
+                                                },
+                                                child: const Text('Close'),
+                                              ),
+                                              _isOpen
+                                                  ? ElevatedButton(
+                                                      style: ButtonStyle(
+                                                          foregroundColor:
+                                                              WidgetStatePropertyAll(
+                                                                  Colors.white),
+                                                          backgroundColor:
+                                                              WidgetStatePropertyAll(
+                                                                  Colors.blue[
+                                                                      900])),
+                                                      onPressed: () {
+                                                        Navigator.pop(context);
+                                                        Navigator.push(
+                                                            context,
+                                                            MaterialPageRoute(
+                                                              builder: (context) =>
+                                                                  Work_Complete(
+                                                                document: snapshot
+                                                                    .data!
+                                                                    .docs[ind],
+                                                                id: snapshot
+                                                                    .data!
+                                                                    .docs[ind]
+                                                                    .id,
+                                                              ),
+                                                            ));
+                                                      },
+                                                      child: const Text(
+                                                          'Completed'),
+                                                    )
+                                                  : SizedBox()
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                );
+                              },
+                              trailing: Wrap(
+                                spacing: -2,
+                                children: [
+                                  IconButton(
+                                      iconSize: 18,
+                                      icon: const Icon(Icons.edit),
+                                      onPressed: () {
+                                        Navigator.push(context,
+                                            MaterialPageRoute(
+                                                builder: (context) {
+                                          return _isOpen
+                                              ? Edit_CustomerData(
+                                                  document: _resultList[ind],
+                                                  id: snapshot
+                                                      .data!.docs[ind].id)
+                                              : Work_Complete(
+                                                  document: _resultList[ind],
+                                                  id: snapshot
+                                                      .data!.docs[ind].id);
+                                        }));
+                                      }),
+                                  IconButton(
+                                    iconSize: 18,
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.redAccent,
+                                    ),
+                                    onPressed: () {
+                                      FirebaseFirestore.instance
+                                          .collection("book")
+                                          .doc(_resultList[ind].id)
+                                          .delete();
+                                    },
+                                  ),
+                                ],
+                              ),
+                              leading: Icon(Icons.person),
+                              title: Row(
+                                children: [
+                                  Text(
+                                    _resultList[ind]['name'],
+                                    style: TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 0.5),
+                                  ),
+                                  SizedBox(width: 20),
+                                  Text(
+                                    "Date: " + _resultList[ind]['date'],
+                                    style: TextStyle(fontSize: 13),
+                                  ),
+                                ],
+                              ),
+                              subtitle: Row(
+                                children: [
+                                  Text(
+                                    "Customer ID: " + _resultList[ind]['id'],
+                                  ),
+                                  SizedBox(
+                                    width: 50,
+                                  ),
+                                  Text(
+                                    "Phone.no: " + _resultList[ind]['number'],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    });
+              },
+            ),
+          ),
+        ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CustomerData()),
+          );
+        },
+        child: Icon(Icons.add),
+        backgroundColor: Colors.blue[900],
+        foregroundColor: Colors.white,
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: [
+          BottomNavigationBarItem(
+              icon: Icon(Icons.all_inbox), label: 'Show All'),
+          BottomNavigationBarItem(icon: Icon(Icons.all_inbox), label: 'Open'),
+          BottomNavigationBarItem(icon: Icon(Icons.all_inbox), label: 'Closed')
+        ],
+        currentIndex: _selectedindex,
+        onTap: _onSelectedtab,
+      ),
+    );
+  }
+
+  Widget view_data(String field, String value) {
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 10, bottom: 15),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 150,
+                child: Text(
+                  field,
+                  style: TextStyle(
+                      fontSize: 18,
+                      color: Colors.blue[900],
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(
+                width: 20,
+              ),
+              Container(
+                width: MediaQuery.of(context).size.width * 0.45,
+                child: Text(
+                  value,
+                  textAlign: TextAlign.left,
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.black,
+                  ),
+                ),
+              )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  void _onSelectedtab(int value) {
+    setState(() {
+      _selectedindex = value;
+      switch (value) {
+        case 0:
+          _stream = FirebaseFirestore.instance
+              .collection("book")
+              .where('status', isEqualTo: null)
+              .snapshots();
+          break;
+        case 1:
+          _stream = FirebaseFirestore.instance
+              .collection("book")
+              .where('status', isEqualTo: 'open')
+              .snapshots();
+          break;
+        case 2:
+          _stream = FirebaseFirestore.instance
+              .collection("book")
+              .where('status', isEqualTo: 'closed')
+              .snapshots();
+          break;
+        default:
+      }
+    });
+  }
+}

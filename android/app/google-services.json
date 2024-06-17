@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "212135836677",
+    "project_id": "servicebook-a8d94",
+    "storage_bucket": "servicebook-a8d94.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:212135836677:android:0c9e5121d3c2d09c6e306c",
+        "android_client_info": {
+          "package_name": "com.example.complain_register_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrtobreyzKuuju3eB_zd0hWqdB1b9p6ZM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:212135836677:android:36ae5fed550cd4906e306c",
+        "android_client_info": {
+          "package_name": "com.example.complaint_register"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDrtobreyzKuuju3eB_zd0hWqdB1b9p6ZM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
