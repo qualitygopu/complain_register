@@ -13,7 +13,7 @@ class Data extends StatefulWidget {
 
 class _DataState extends State<Data> {
   final TextEditingController _searchController = TextEditingController();
-
+  String _search = "";
   int _selectedindex = 0;
   Stream<QuerySnapshot> _stream = FirebaseFirestore.instance
       .collection("book")
@@ -47,7 +47,9 @@ class _DataState extends State<Data> {
             padding: const EdgeInsets.all(8.0),
             child: TextField(
               onChanged: (value) {
-                setState(() {});
+                setState(() {
+                  _search = value;
+                });
               },
               controller: _searchController,
               decoration: InputDecoration(
@@ -75,184 +77,26 @@ class _DataState extends State<Data> {
                 return ListView.builder(
                     itemCount: snapshot.data!.docs.length,
                     itemBuilder: (context, ind) {
-                      bool _isOpen =
-                          snapshot.data!.docs[ind]['status'] == 'open';
-                      var _data = snapshot.data!.docs[ind].data()
-                          as Map<String, dynamic>;
+                      QueryDocumentSnapshot _data = snapshot.data!.docs[ind];
+
                       if (_data['number']
                           .toString()
-                          .contains(_searchController.text.toLowerCase())) {
+                          .contains(_search.toLowerCase())) {
                         return Padding(
                           padding: const EdgeInsets.all(4.0),
                           child: Container(
                             width: double.infinity,
                             child: Card(
-                              child: ListTile(
-                                onTap: () {
-                                  showDialog<String>(
-                                    context: context,
-                                    builder: (BuildContext context) => Dialog(
-                                      child: Padding(
-                                        padding: const EdgeInsets.only(
-                                            left: 10, top: 10, bottom: 20),
-                                        child: Column(
-                                          mainAxisSize: MainAxisSize.min,
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.center,
-                                          children: <Widget>[
-                                            Center(
-                                                child: Text("Customer Details",
-                                                    style: TextStyle(
-                                                        fontSize: 18,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        decoration:
-                                                            TextDecoration
-                                                                .underline))),
-                                            SizedBox(
-                                              height: 15,
-                                            ),
-                                            view_data(
-                                                "Customer Name: ",
-                                                snapshot.data!.docs[ind]
-                                                    ["name"]),
-                                            view_data(
-                                                'Phone.no: ',
-                                                snapshot.data!.docs[ind]
-                                                    ["number"]),
-                                            view_data(
-                                                'Address: ',
-                                                snapshot.data!.docs[ind]
-                                                    ["address"]),
-                                            view_data(
-                                                'Complaint: ',
-                                                snapshot.data!.docs[ind]
-                                                    ["complaint"]),
-                                            view_data(
-                                                'Date: ',
-                                                snapshot.data!.docs[ind]
-                                                    ["date"]),
-                                            const SizedBox(
-                                              height: 20,
-                                            ),
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceEvenly,
-                                              children: [
-                                                ElevatedButton(
-                                                  onPressed: () {
-                                                    Navigator.pop(context);
-                                                  },
-                                                  child: const Text('Close'),
-                                                ),
-                                                _isOpen
-                                                    ? ElevatedButton(
-                                                        onPressed: () {
-                                                          Navigator.pop(
-                                                              context);
-                                                          Navigator.push(
-                                                              context,
-                                                              MaterialPageRoute(
-                                                                builder:
-                                                                    (context) =>
-                                                                        Work_Complete(
-                                                                  document: snapshot
-                                                                          .data!
-                                                                          .docs[
-                                                                      ind],
-                                                                  id: snapshot
-                                                                      .data!
-                                                                      .docs[ind]
-                                                                      .id,
-                                                                ),
-                                                              ));
-                                                        },
-                                                        child: const Text(
-                                                            'Completed'),
-                                                      )
-                                                    : SizedBox()
-                                              ],
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                },
-                                trailing: Wrap(
-                                  spacing: -2,
-                                  children: [
-                                    IconButton(
-                                        iconSize: 18,
-                                        icon: const Icon(Icons.edit),
-                                        onPressed: () {
-                                          Navigator.push(context,
-                                              MaterialPageRoute(
-                                                  builder: (context) {
-                                            return _isOpen
-                                                ? Edit_CustomerData(
-                                                    document: snapshot
-                                                        .data!.docs[ind],
-                                                    id: snapshot
-                                                        .data!.docs[ind].id)
-                                                : Work_Complete(
-                                                    document: snapshot
-                                                        .data!.docs[ind],
-                                                    id: snapshot
-                                                        .data!.docs[ind].id);
-                                          }));
-                                        }),
-                                    IconButton(
-                                      iconSize: 18,
-                                      icon: const Icon(
-                                        Icons.delete,
-                                      ),
-                                      onPressed: () {
-                                        FirebaseFirestore.instance
-                                            .collection("book")
-                                            .doc(snapshot.data!.docs[ind].id)
-                                            .delete();
-                                      },
-                                    ),
-                                  ],
-                                ),
-                                leading: Padding(
-                                  padding: const EdgeInsets.only(right: 12),
-                                  child: Icon(Icons.person),
-                                ),
-                                title: Row(
-                                  children: [
-                                    Text(
-                                      snapshot.data!.docs[ind]['name'],
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.w600,
-                                          letterSpacing: 0.5),
-                                    ),
-                                  ],
-                                ),
-                                subtitle: Padding(
-                                  padding: const EdgeInsets.only(top: 8),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Mobile No / ID: " +
-                                            snapshot.data!.docs[ind]['number'],
-                                      ),
-                                      SizedBox(width: 25),
-                                      Text(
-                                        "Date: " +
-                                            snapshot.data!.docs[ind]['date'],
-                                        style: TextStyle(fontSize: 15),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
+                              child:
+                                  // Text(ind.toString()),
+                                  _record(ind, _data),
                             ),
                           ),
                         );
+                      } else if (_search.isEmpty) {
+                        return _record(ind, _data);
+                      } else {
+                        return Container();
                       }
                     });
               },
@@ -345,5 +189,131 @@ class _DataState extends State<Data> {
         default:
       }
     });
+  }
+
+  _record(int ind, QueryDocumentSnapshot data) {
+    bool _isOpen = data['status'] == 'open';
+    return ListTile(
+      onTap: () {
+        showDialog<String>(
+          context: context,
+          builder: (BuildContext context) => Dialog(
+            child: Padding(
+              padding: const EdgeInsets.only(left: 10, top: 10, bottom: 20),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Center(
+                      child: Text("Customer Details",
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              decoration: TextDecoration.underline))),
+                  SizedBox(
+                    height: 15,
+                  ),
+                  view_data("Customer Name: ", data["name"]),
+                  view_data('Phone.no: ', data["number"]),
+                  view_data('Address: ', data["address"]),
+                  view_data('Complaint: ', data["complaint"]),
+                  view_data('Date: ', data["date"]),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text('Close'),
+                      ),
+                      _isOpen
+                          ? SizedBox(
+                              width: 20,
+                            )
+                          : SizedBox(),
+                      _isOpen
+                          ? ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => Work_Complete(
+                                        document: data,
+                                        id: data.id,
+                                      ),
+                                    ));
+                              },
+                              child: const Text('Completed'),
+                            )
+                          : SizedBox()
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+      trailing: Wrap(
+        spacing: -2,
+        children: [
+          IconButton(
+              iconSize: 18,
+              icon: const Icon(Icons.edit),
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (context) {
+                  return _isOpen
+                      ? Edit_CustomerData(document: data, id: data.id)
+                      : Work_Complete(document: data, id: data.id);
+                }));
+              }),
+          IconButton(
+            iconSize: 18,
+            icon: const Icon(
+              Icons.delete,
+            ),
+            onPressed: () {
+              FirebaseFirestore.instance
+                  .collection("book")
+                  .doc(data.id)
+                  .delete();
+            },
+          ),
+        ],
+      ),
+      leading: Padding(
+        padding: const EdgeInsets.only(right: 12),
+        child: Icon(Icons.person),
+      ),
+      title: Row(
+        children: [
+          Text(
+            data['name'],
+            style: TextStyle(fontWeight: FontWeight.w600, letterSpacing: 0.5),
+          ),
+        ],
+      ),
+      subtitle: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              "Mobile No / ID: " + data['number'],
+            ),
+            SizedBox(width: 25),
+            Text(
+              "Date: " + data['date'],
+              style: TextStyle(fontSize: 15),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

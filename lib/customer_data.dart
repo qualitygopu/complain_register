@@ -34,7 +34,7 @@ class _CustomerDataState extends State<CustomerData> {
       body: Padding(
         padding:
             const EdgeInsets.only(left: 20, bottom: 10, right: 20, top: 30),
-        child: Column(
+        child: ListView(
           children: [
             TextField(
               readOnly: true,

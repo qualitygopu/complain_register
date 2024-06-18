@@ -10,6 +10,7 @@ Future<void> main() async {
 
   runApp(MaterialApp(
     theme: ThemeData(
+        primaryColor: Colors.blue[900],
         floatingActionButtonTheme: FloatingActionButtonThemeData(
           backgroundColor: Colors.blue[900],
           foregroundColor: Colors.white,
