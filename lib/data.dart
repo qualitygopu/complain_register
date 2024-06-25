@@ -14,26 +14,11 @@ class Data extends StatefulWidget {
 class _DataState extends State<Data> {
   final TextEditingController _searchController = TextEditingController();
   String _search = "";
-  int _selectedindex = 0;
+  int _selectedindex = 1;
   Stream<QuerySnapshot> _stream = FirebaseFirestore.instance
       .collection("book")
-      .where('status', isEqualTo: null)
+      .where('status', isEqualTo: 'open')
       .snapshots();
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +73,6 @@ class _DataState extends State<Data> {
                             width: double.infinity,
                             child: Card(
                               child:
-                                  // Text(ind.toString()),
                                   _record(ind, _data),
                             ),
                           ),
@@ -172,18 +156,21 @@ class _DataState extends State<Data> {
           _stream = FirebaseFirestore.instance
               .collection("book")
               .where('status', isEqualTo: null)
+              .orderBy('date', descending: true)
               .snapshots();
           break;
         case 1:
           _stream = FirebaseFirestore.instance
               .collection("book")
               .where('status', isEqualTo: 'open')
+              .orderBy('date', descending: true)
               .snapshots();
           break;
         case 2:
           _stream = FirebaseFirestore.instance
               .collection("book")
               .where('status', isEqualTo: 'closed')
+              .orderBy('date', descending: true)
               .snapshots();
           break;
         default:
@@ -213,11 +200,19 @@ class _DataState extends State<Data> {
                   SizedBox(
                     height: 15,
                   ),
-                  view_data("Customer Name: ", data["name"]),
-                  view_data('Phone.no: ', data["number"]),
-                  view_data('Address: ', data["address"]),
-                  view_data('Complaint: ', data["complaint"]),
-                  view_data('Date: ', data["date"]),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                      child: Expanded(
+                        child: Column(
+                                            children: [
+                        view_data("Customer Name: ", data["name"]),
+                        view_data('Phone.no: ', data["number"]),
+                        view_data('Address: ', data["address"]),
+                        view_data('Complaint: ', data["complaint"]),
+                        view_data('Date: ', data["date"]),
+                                            ],
+                                          ),
+                      )),
                   const SizedBox(
                     height: 20,
                   ),
@@ -259,32 +254,31 @@ class _DataState extends State<Data> {
           ),
         );
       },
-      trailing: Wrap(
-        spacing: -2,
-        children: [
-          IconButton(
-              iconSize: 18,
-              icon: const Icon(Icons.edit),
-              onPressed: () {
-                Navigator.push(context, MaterialPageRoute(builder: (context) {
-                  return _isOpen
-                      ? Edit_CustomerData(document: data, id: data.id)
-                      : Work_Complete(document: data, id: data.id);
-                }));
-              }),
-          IconButton(
-            iconSize: 18,
-            icon: const Icon(
-              Icons.delete,
+      trailing: PopupMenuButton(
+        onSelected: (value) {
+          if (value == 1) {
+            Navigator.push(context, MaterialPageRoute(builder: (context) {
+              return _isOpen
+                  ? Edit_CustomerData(document: data, id: data.id)
+                  : Work_Complete(document: data, id: data.id);
+            }));
+          } else if (value == 2) {
+            FirebaseFirestore.instance.collection("book").doc(data.id).delete();
+          }
+        },
+        itemBuilder: (context) {
+          return [
+            PopupMenuItem(
+              child: ListTile(leading: Icon(Icons.edit), title: Text("Edit")),
+              value: 1,
             ),
-            onPressed: () {
-              FirebaseFirestore.instance
-                  .collection("book")
-                  .doc(data.id)
-                  .delete();
-            },
-          ),
-        ],
+            PopupMenuItem(
+              child:
+                  ListTile(leading: Icon(Icons.delete), title: Text("Delete")),
+              value: 2,
+            ),
+          ];
+        },
       ),
       leading: Padding(
         padding: const EdgeInsets.only(right: 12),

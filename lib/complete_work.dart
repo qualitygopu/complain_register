@@ -1,4 +1,7 @@
+import 'package:dropdownfield2/dropdownfield2.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -21,6 +24,10 @@ class _Work_CompleteState extends State<Work_Complete> {
   final TextEditingController _material = TextEditingController();
   final TextEditingController _charges = TextEditingController();
 
+  List<String> _instllersName = [
+    "Name"
+  ];
+
   @override
   void initState() {
     // TODO: implement initState
@@ -35,6 +42,23 @@ class _Work_CompleteState extends State<Work_Complete> {
       _material.text = widget.document["materials"];
       _charges.text = widget.document["charges"];
     }
+    getStName();
+  }
+
+  void getStName() {
+    Future<QuerySnapshot<Map<String, dynamic>>> _stName = FirebaseFirestore
+        .instance
+        .collection("book")
+        .orderBy('installer')
+        .get();
+    _stName.then((value) {
+      setState(() {
+        
+        _instllersName = value.docs
+            .map((e) => e.data()['installer'].toString())
+            .toList();
+      });
+    });
   }
 
   @override
@@ -91,6 +115,7 @@ class _Work_CompleteState extends State<Work_Complete> {
             const SizedBox(
               height: 20,
             ),
+            
             TextField(
               maxLines: 3,
               controller: _complaint,
@@ -100,11 +125,24 @@ class _Work_CompleteState extends State<Work_Complete> {
             const SizedBox(
               height: 20,
             ),
+
             TextField(
               maxLines: 1,
               controller: _installer,
-              decoration: const InputDecoration(
-                  label: Text("Installer"), border: OutlineInputBorder()),
+              
+              decoration:  InputDecoration(
+                  label: Text("Installer"), border: OutlineInputBorder(),
+                  suffixIcon: PopupMenuButton<String>(
+                    icon: Icon( Icons.arrow_drop_down),
+                    itemBuilder: (BuildContext context){
+                      return _instllersName.map((String item){
+                        return PopupMenuItem<String>(
+                          value: item,
+                          child: Text(item),
+                        );
+                      }).toList();
+                    }
+                  )),
             ),
             const SizedBox(
               height: 20,

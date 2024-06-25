@@ -9,6 +9,7 @@ Future<void> main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(MaterialApp(
+    debugShowCheckedModeBanner: false,
     theme: ThemeData(
         primaryColor: Colors.blue[900],
         floatingActionButtonTheme: FloatingActionButtonThemeData(
