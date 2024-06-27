@@ -3,6 +3,7 @@ import 'package:complain_register_1/customer_data.dart';
 import 'package:complain_register_1/edit_customer.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 
 class Data extends StatefulWidget {
   const Data({super.key});
@@ -72,8 +73,7 @@ class _DataState extends State<Data> {
                           child: Container(
                             width: double.infinity,
                             child: Card(
-                              child:
-                                  _record(ind, _data),
+                              child: _record(ind, _data),
                             ),
                           ),
                         );
@@ -148,7 +148,7 @@ class _DataState extends State<Data> {
     );
   }
 
-  void _onSelectedtab(int value) {
+  Future<void> _onSelectedtab(int value) async {
     setState(() {
       _selectedindex = value;
       switch (value) {
@@ -180,7 +180,23 @@ class _DataState extends State<Data> {
 
   _record(int ind, QueryDocumentSnapshot data) {
     bool _isOpen = data['status'] == 'open';
+
     return ListTile(
+      onLongPress: () {
+        Clipboard.setData(ClipboardData(
+                text: "Customer Name: " +
+                    data["name"] +
+                    "\nPhone.no: " +
+                    data["number"] +
+                    "\nAddress: " +
+                    data["address"] +
+                    "\nComplaint: " +
+                    data["complaint"]))
+            .whenComplete(() {
+          SnackBar sbar = SnackBar(content: Text("Copied to clipboard"));
+          ScaffoldMessenger.of(context).showSnackBar(sbar);
+        });
+      },
       onTap: () {
         showDialog<String>(
           context: context,
@@ -201,17 +217,15 @@ class _DataState extends State<Data> {
                     height: 15,
                   ),
                   SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                      child: Expanded(
-                        child: Column(
-                                            children: [
-                        view_data("Customer Name: ", data["name"]),
-                        view_data('Phone.no: ', data["number"]),
-                        view_data('Address: ', data["address"]),
-                        view_data('Complaint: ', data["complaint"]),
-                        view_data('Date: ', data["date"]),
-                                            ],
-                                          ),
+                      scrollDirection: Axis.horizontal,
+                      child: Column(
+                        children: [
+                          view_data("Customer Name: ", data["name"]),
+                          view_data('Phone.no: ', data["number"]),
+                          view_data('Address: ', data["address"]),
+                          view_data('Complaint: ', data["complaint"]),
+                          view_data('Date: ', data["date"]),
+                        ],
                       )),
                   const SizedBox(
                     height: 20,
@@ -221,9 +235,17 @@ class _DataState extends State<Data> {
                     children: [
                       ElevatedButton(
                         onPressed: () {
-                          Navigator.pop(context);
+                          Clipboard.setData(ClipboardData(
+                              text: "Customer Name: " +
+                                  data["name"] +
+                                  "\nPhone.no: " +
+                                  data["number"] +
+                                  "\nAddress: " +
+                                  data["address"] +
+                                  "\nComplaint: " +
+                                  data["complaint"]));
                         },
-                        child: const Text('Close'),
+                        child: const Text('Copy'),
                       ),
                       _isOpen
                           ? SizedBox(
@@ -282,7 +304,7 @@ class _DataState extends State<Data> {
       ),
       leading: Padding(
         padding: const EdgeInsets.only(right: 12),
-        child: Icon(Icons.person),
+        child: Icon(_isOpen ? Icons.pending_actions : Icons.done_all),
       ),
       title: Row(
         children: [

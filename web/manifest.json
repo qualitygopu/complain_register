@@ -1,6 +1,6 @@
 {
-    "name": "complain_register_1",
-    "short_name": "complain_register_1",
+    "name": "complain_register",
+    "short_name": "complain_register",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

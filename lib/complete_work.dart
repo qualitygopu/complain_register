@@ -24,9 +24,7 @@ class _Work_CompleteState extends State<Work_Complete> {
   final TextEditingController _material = TextEditingController();
   final TextEditingController _charges = TextEditingController();
 
-  List<String> _instllersName = [
-    "Name"
-  ];
+  List<String> _instllersName = ["Name"];
 
   @override
   void initState() {
@@ -53,10 +51,14 @@ class _Work_CompleteState extends State<Work_Complete> {
         .get();
     _stName.then((value) {
       setState(() {
-        
-        _instllersName = value.docs
-            .map((e) => e.data()['installer'].toString())
-            .toList();
+        value.docs.forEach((element) {
+          if (_instllersName.contains(element["installer"]) ||
+              element["installer"].toString().trim() == '')
+            return;
+          else
+            _instllersName.add(element["installer"]);
+        });
+        _instllersName.sort();
       });
     });
   }
@@ -115,7 +117,6 @@ class _Work_CompleteState extends State<Work_Complete> {
             const SizedBox(
               height: 20,
             ),
-            
             TextField(
               maxLines: 3,
               controller: _complaint,
@@ -125,24 +126,26 @@ class _Work_CompleteState extends State<Work_Complete> {
             const SizedBox(
               height: 20,
             ),
-
             TextField(
               maxLines: 1,
               controller: _installer,
-              
-              decoration:  InputDecoration(
-                  label: Text("Installer"), border: OutlineInputBorder(),
+              decoration: InputDecoration(
+                  label: Text("Installer"),
+                  border: OutlineInputBorder(),
                   suffixIcon: PopupMenuButton<String>(
-                    icon: Icon( Icons.arrow_drop_down),
-                    itemBuilder: (BuildContext context){
-                      return _instllersName.map((String item){
-                        return PopupMenuItem<String>(
-                          value: item,
-                          child: Text(item),
-                        );
-                      }).toList();
-                    }
-                  )),
+                      onSelected: (String value) {
+                        _installer.text = value;
+                      },
+                      constraints: BoxConstraints(minWidth: 200),
+                      icon: Icon(Icons.arrow_drop_down),
+                      itemBuilder: (BuildContext context) {
+                        return _instllersName.map((String item) {
+                          return PopupMenuItem<String>(
+                            value: item,
+                            child: Text(item),
+                          );
+                        }).toList();
+                      })),
             ),
             const SizedBox(
               height: 20,
